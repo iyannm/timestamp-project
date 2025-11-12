@@ -1,4 +1,4 @@
-Flask==2.3.4              # Web framework
+Flask==3.1.2            # Web framework
 Flask-SQLAlchemy==3.0.5   # ORM for database access
 Flask-WTF==1.1.1          # Forms handling (optional, for employee/admin forms)
 WTForms==3.0.1             # Form validation (used with Flask-WTF)
