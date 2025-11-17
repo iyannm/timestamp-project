@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<!-- Add Employee -->
+<h2>Add Employee</h2>
+<form method="POST" action="{{ url_for('main.add_employee') }}">
+    <label>Name:</label>
+    <input type="text" name="name" required>
+    <label>Hourly Rate:</label>
+    <input type="number" step="0.01" name="hourly_rate" required>
+    <button type="submit">Add Employee</button>
+</form>
+
+<hr>
+
+<!-- Delete Employee -->
+<h2>Delete Employee</h2>
+<form method="POST" action="{{ url_for('main.delete_employee') }}">
+    <label>Employee ID:</label>
+    <input type="number" name="employee_id" required>
+    <button type="submit">Delete</button>
+</form>
+
+<hr>
+
+<!-- Upload Face -->
+<h2>Upload Face Image</h2>
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('main.upload_face_admin') }}">
+    <label>Employee ID:</label>
+    <input type="number" name="employee_id" required>
+    <input type="file" name="face_image" accept="image/*" required>
+    <button type="submit">Upload</button>
+</form>
+
+<hr>
+
+<!-- View Hours -->
+<h2>View Employee Attendance</h2>
+<form method="GET" action="{{ url_for('main.view_attendance') }}">
+    <label>Employee ID:</label>
+    <input type="number" name="employee_id" required>
+    <button type="submit">View</button>
+</form>
+
+<hr>
+
+<!-- Salary Report -->
+<h2>Salary Report</h2>
+<form method="POST" action="{{ url_for('main.salary_report') }}">
+    <label>Start Date:</label>
+    <input type="date" name="start_date" required>
+
+    <label>End Date:</label>
+    <input type="date" name="end_date" required>
+
+    <button type="submit">Generate Report</button>
+</form>
+
+<hr>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<form action="{{ url_for('main.index') }}">
+    <button type="submit">Back to Login</button>
+</form>
+
+</body>
+</html>

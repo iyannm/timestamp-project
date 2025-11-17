@@ -1,0 +1,146 @@
+/* login.css */
+
+/* --- Global Styles --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #6c63ff, #00bfa6);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+}
+
+/* --- Login Container --- */
+.login-container {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+}
+
+/* --- Logo --- */
+.logo {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+/* --- Headings --- */
+h1 {
+    font-size: 26px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+p.tagline {
+    font-size: 14px;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+/* --- Flash Messages --- */
+.flash-message {
+    background: #ffe6e6;
+    color: #cc0000;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    text-align: left;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+/* --- Buttons --- */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.button-group button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #6c63ff;
+    color: #fff;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+/* Hover scaling for micro-interaction */
+.button-group button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Pulse animation only for Face Login button */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(108, 99, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(108, 99, 255, 0);
+    }
+}
+
+.face-login:hover {
+    animation: pulse 1.5s infinite;
+}
+
+/* Button icons */
+.button-group i {
+    font-size: 18px;
+}
+
+/* Spinner icon inside button */
+.spinner-icon {
+    font-size: 18px;
+}
+
+/* --- HR Styling --- */
+hr {
+    margin: 25px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* --- Footer --- */
+.footer {
+    font-size: 12px;
+    color: #666;
+}
+
+/* --- Responsive --- */
+@media (min-width: 500px) {
+    .button-group {
+        flex-direction: row;
+    }
+
+    .button-group button {
+        flex: 1;
+    }
+}

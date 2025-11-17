@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Dashboard</title>
+
+</head>
+<body>
+
+<h1>Welcome, {{ employee.name }}</h1>
+
+<!-- ========================= -->
+<!--   CURRENT STATUS          -->
+<!-- ========================= -->
+<p><strong>Status:</strong> {{ current_status }}</p>
+
+{% if clock_in_time %}
+<p><strong>Clock-in Time:</strong>
+    {{ clock_in_time.strftime('%b %d, %I:%M %p') }}
+</p>
+
+<p><strong>Expected Clock-Out:</strong>
+    {{ expected_clock_out.strftime('%b %d, %I:%M %p') }}
+</p>
+{% endif %}
+
+<hr>
+
+<!-- ========================= -->
+<!--   TODAY SUMMARY           -->
+<!-- ========================= -->
+<h2>Today's Summary</h2>
+<p><strong>Hours Worked Today:</strong> {{ hours_today }} hrs</p>
+<p><strong>Earnings Today:</strong> ${{ earnings_today }}</p>
+
+<hr>
+
+<!-- ========================= -->
+<!--   PROFILE SECTION         -->
+<!-- ========================= -->
+<h2>Profile</h2>
+<p><strong>Name:</strong> {{ employee.name }}</p>
+<p><strong>Hourly Rate:</strong> ${{ employee.hourly_rate }}</p>
+
+<hr>
+
+<!-- ========================= -->
+<!--   DATE RANGE FORM         -->
+<!-- ========================= -->
+<h2>Check Worked Hours & Salary</h2>
+
+<form method="POST" action="{{ url_for('main.employee_dashboard') }}">
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" id="start_date" required
+           value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}">
+
+    <label for="end_date">End Date:</label>
+    <input type="date" name="end_date" id="end_date" required
+           value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}">
+
+    <button type="submit">Calculate</button>
+</form>
+
+{% if total_hours and salary %}
+<h3>Results:</h3>
+<p>Total Hours Worked: {{ total_hours }}</p>
+<p>Salary: ${{ salary }}</p>
+{% endif %}
+
+<!-- ========================= -->
+<!--   BACK TO LOGIN           -->
+<!-- ========================= -->
+<form action="{{ url_for('main.index') }}">
+    <button type="submit">Back to Login</button>
+</form>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>
+  {% for msg in messages %}
+    <li>{{ msg }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Face Verification</title>
+
+    <!-- Link your login.css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <style>
+        /* Override/add specific styles for the face preview box */
+        body {
+            background: linear-gradient(135deg, #6c63ff, #00bfa6);
+            color: #fff;
+        }
+
+        .box {
+            background: rgba(28, 28, 28, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            width: 420px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        img {
+            width: 370px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+
+        .status-text {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .countdown {
+            font-size: 1.1rem;
+            margin-top: 8px;
+            color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container box">
+    {% if img %}
+        <img src="{{ url_for('static', filename='tmp/' + img) }}"
+             onerror="console.error('IMAGE FAILED TO LOAD:', this.src)">
+
+        <p class="countdown" style="font-size: 0.9rem; color: #ccc;">
+            Debug path: {{ url_for('static', filename='tmp/' + img) }}
+        </p>
+    {% endif %}
+
+    {% if success %}
+        <div class="status-text">Face recognized ✓</div>
+        <div class="countdown">Redirecting to dashboard in <span id="count">4</span> seconds...</div>
+
+        <script>
+            let seconds = 4;
+            const label = document.getElementById("count");
+
+            const timer = setInterval(() => {
+                seconds--;
+                label.textContent = seconds;
+
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    window.location.href = "{{ url_for('main.employee_dashboard') }}";
+                }
+            }, 1000);
+        </script>
+
+    {% else %}
+        <div class="status-text">Face not recognized ❌</div>
+        <div class="countdown">Returning to login in <span id="count">4</span> seconds...</div>
+
+        <script>
+            let seconds = 4;
+            const label = document.getElementById("count");
+
+            const timer = setInterval(() => {
+                seconds--;
+                label.textContent = seconds;
+
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    window.location.href = "{{ url_for('main.index') }}";
+                }
+            }, 1000);
+        </script>
+    {% endif %}
+</div>
+
+</body>
+</html>

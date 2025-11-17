@@ -1,0 +1,14 @@
+<h2>Upload Employee Face</h2>
+<form method="POST" enctype="multipart/form-data">
+    <label for="employee_id">Select Employee:</label>
+    <select name="employee_id">
+        {% for emp in employees %}
+        <option value="{{ emp.id }}">{{ emp.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <label for="face_image">Face Image:</label>
+    <input type="file" name="face_image" accept="image/*" required>
+    <br>
+    <button type="submit">Upload</button>
+</form>

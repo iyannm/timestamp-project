@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Timecard System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Logo -->
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+
+        <h1>Welcome to Timecard System</h1>
+        <p class="tagline">Clock in/out quickly with facial recognition or login as admin to manage employees.</p>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for msg in messages %}
+              <div class="flash-message">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <!-- Employee Face Login -->
+            <form method="POST" action="{{ url_for('main.login_face') }}" id="face-login-form">
+                <button type="submit" class="face-login" id="face-login-btn">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="btn-text">Login with Face</span>
+                    <i class="fas fa-spinner fa-spin spinner-icon" style="display:none;"></i>
+                </button>
+            </form>
+
+            <!-- Admin Login -->
+            <form method="GET" action="{{ url_for('main.admin_login') }}">
+                <button type="submit" class="admin-login">
+                    <i class="fas fa-user-lock"></i> Admin Login
+                </button>
+            </form>
+        </div>
+
+        <hr>
+
+        <!-- Footer / System Info -->
+        <div class="footer">
+            Version 1.0 | &copy; 2025 Your Company
+        </div>
+    </div>
+
+    <script>
+        // Show spinner when face login form is submitted
+        const faceForm = document.getElementById('face-login-form');
+        const faceBtn = document.getElementById('face-login-btn');
+        const spinner = faceBtn.querySelector('.spinner-icon');
+        const btnText = faceBtn.querySelector('.btn-text');
+
+        faceForm.addEventListener('submit', () => {
+            spinner.style.display = 'inline-block';
+            btnText.style.display = 'none';
+            faceBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

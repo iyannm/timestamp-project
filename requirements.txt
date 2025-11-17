@@ -1,8 +1,17 @@
-Flask==3.1.2            # Web framework
-Flask-SQLAlchemy==3.0.5   # ORM for database access
-Flask-WTF==1.1.1          # Forms handling (optional, for employee/admin forms)
-WTForms==3.0.1             # Form validation (used with Flask-WTF)
-SQLAlchemy==2.0.20         # Core SQLAlchemy (used by Flask-SQLAlchemy)
-python-dotenv==1.0.0       # For environment variables (optional, e.g., secret key)
-pytest==8.4.0              # Unit testing (optional)
-pytest-flask==1.2.0        # Flask-specific testing (optional)
+# Flask web framework
+Flask==3.1.2
+Flask-SQLAlchemy==3.0.5
+Flask-WTF==1.1.1
+WTForms==3.0.1
+
+# Computer vision and facial recognition
+opencv-python==4.8.1.78
+dlib==19.22.99
+face_recognition==1.3.0
+
+# Utilities
+python-dotenv==1.0.0
+
+# Optional for testing
+pytest==8.4.0
+pytest-flask==1.2.0

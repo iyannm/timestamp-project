@@ -167,7 +167,7 @@ def update_hourly_rate():
         print("Invalid employee ID!\n")
         return
     new_rate = float(input("Enter new hourly rate: "))
-    employees[emp_id]['rate'] = new_rate
+    employees[emp_id]['rate'] = int(new_rate)
     print(f"Updated {employees[emp_id]['name']}'s rate to ${new_rate}/hr\n")
 
 
