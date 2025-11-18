@@ -1,31 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Admin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_login.css') }}">
 </head>
 <body>
 
-<h2>Admin Login</h2>
+<div class="login-container">
+    <h2>Admin Login</h2>
 
-<form method="POST" action="{{ url_for('main.admin_login') }}">
-    <label>Username:</label>
-    <input type="text" name="username" required>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+            {% for msg in messages %}
+                <li>{{ msg }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
 
-    <label>Password:</label>
-    <input type="password" name="password" required>
+    <form method="POST" action="{{ url_for('main.admin_login') }}">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter username" required>
 
-    <button type="submit">Login</button>
-</form>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter password" required>
 
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <ul>
-        {% for msg in messages %}
-            <li>{{ msg }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
+        <button type="submit" class="btn">Login</button>
+    </form>
+</div>
 
 </body>
 </html>

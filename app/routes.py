@@ -75,6 +75,8 @@ def face_preview():
     img = session.get("last_capture")
     success = "employee_id" in session
     return render_template("face_preview.html", img=img, success=success)
+
+
 # Employee dashboard
 @main_bp.route("/employee_dashboard", methods=["GET", "POST"])
 def employee_dashboard():
@@ -85,7 +87,7 @@ def employee_dashboard():
 
     employee = Employee.query.get(employee_id)
 
-    # Latest log
+    # --- Latest log for status ---
     latest_log = Attendance.query.filter_by(employee_id=employee_id)\
         .order_by(Attendance.id.desc()).first()
 
@@ -98,7 +100,7 @@ def employee_dashboard():
 
     expected_clock_out = clock_in_time + timedelta(hours=8) if clock_in_time else None
 
-    # Today's hours
+    # --- Today's hours & earnings ---
     today = date.today()
     today_logs = Attendance.query.filter(
         Attendance.employee_id == employee_id,
@@ -107,21 +109,19 @@ def employee_dashboard():
 
     today_seconds = 0
     open_clock_in = None
-
     for log in today_logs:
         if log.status == "clocked in":
             open_clock_in = log.timestamp
         elif log.status == "clocked out" and open_clock_in:
             today_seconds += (log.timestamp - open_clock_in).total_seconds()
             open_clock_in = None
-
     if open_clock_in:
         today_seconds += (datetime.now() - open_clock_in).total_seconds()
 
     hours_today = round(today_seconds / 3600, 2)
     earnings_today = round(hours_today * employee.hourly_rate, 2)
 
-    # Date range calculations
+    # --- Date range calculations ---
     total_hours = 0
     salary = 0
     start_date = end_date = None
@@ -148,6 +148,34 @@ def employee_dashboard():
 
         salary = total_hours * employee.hourly_rate
 
+    # --- Last 7 days for charts ---
+    week_labels = []
+    week_hours = []
+    week_earnings = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        week_labels.append(day.strftime("%a"))
+        day_logs = Attendance.query.filter(
+            Attendance.employee_id == employee.id,
+            db.func.date(Attendance.timestamp) == day
+        ).order_by(Attendance.timestamp).all()
+
+        day_seconds = 0
+        open_clock_in = None
+        for log in day_logs:
+            if log.status == "clocked in":
+                open_clock_in = log.timestamp
+            elif log.status == "clocked out" and open_clock_in:
+                day_seconds += (log.timestamp - open_clock_in).total_seconds()
+                open_clock_in = None
+        if open_clock_in:
+            day_seconds += (datetime.now() - open_clock_in).total_seconds()
+
+        hours = round(day_seconds / 3600, 2)
+        week_hours.append(hours)
+        week_earnings.append(round(hours * employee.hourly_rate, 2))
+
+    # --- Render template ---
     return render_template(
         "employee_dashboard.html",
         employee=employee,
@@ -159,7 +187,10 @@ def employee_dashboard():
         total_hours=round(total_hours, 2),
         salary=round(salary, 2),
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        week_labels=week_labels,
+        week_hours=week_hours,
+        week_earnings=week_earnings
     )
 
 # --- Upload Face Temporary---

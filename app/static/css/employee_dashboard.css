@@ -1,0 +1,155 @@
+/* employee_dashboard.css */
+
+/* --- Import Professional Font --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* --- Global Styles --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #6c63ff, #00bfa6);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 50px 0;
+    color: #333;
+}
+
+.dashboard-container {
+    background: #fff;
+    padding: 35px 30px;
+    border-radius: 18px;
+    box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+    max-width: 1000px;
+    width: 95%;
+}
+
+/* --- Headings --- */
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+
+h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+/* --- Cards --- */
+.card {
+    background: #f8f9fa;
+    padding: 25px 20px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* --- Status Highlights --- */
+.status {
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.status.clocked-in {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status.clocked-out {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* --- Forms --- */
+form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+form input[type="date"] {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    width: 48%;
+    font-size: 15px;
+}
+
+form button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #6c63ff;
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+form button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* --- Results --- */
+.results p {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+/* --- Flex Layout for Summary --- */
+.summary-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.summary-container .card {
+    flex: 1 1 300px;
+    min-width: 280px;
+}
+
+/* --- Back Button --- */
+.back-btn {
+    margin-top: 20px;
+    background: #ff4b5c;
+    width: 100%;
+}
+
+.back-btn:hover {
+    background: #e03f4f;
+}
+
+/* --- Flash Messages --- */
+ul {
+    margin-top: 20px;
+    padding-left: 20px;
+    color: #cc0000;
+    font-weight: 500;
+}

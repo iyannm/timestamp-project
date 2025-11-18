@@ -3,87 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <title>Employee Dashboard</title>
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/employee_dashboard.css') }}">
 </head>
 <body>
 
-<h1>Welcome, {{ employee.name }}</h1>
+<div class="dashboard-container">
+    <h1>Welcome, {{ employee.name }}</h1>
 
+    <!-- ========================= -->
+    <!--   CURRENT STATUS CARD     -->
+    <!-- ========================= -->
+    <div class="card">
+        <h2>Current Status</h2>
+        <p>Status:
+            <span class="status {{ 'clocked-in' if current_status=='clocked in' else 'clocked-out' }}">
+                {{ current_status }}
+            </span>
+        </p>
+
+        {% if clock_in_time %}
+        <p><strong>Clock-in Time:</strong> {{ clock_in_time.strftime('%b %d, %I:%M %p') }}</p>
+        <p><strong>Expected Clock-Out:</strong> {{ expected_clock_out.strftime('%b %d, %I:%M %p') }}</p>
+        {% endif %}
+    </div>
+
+    <!-- ========================= -->
+    <!--   TODAY SUMMARY & PROFILE -->
+    <!-- ========================= -->
+    <div class="summary-container">
+        <div class="card">
+            <h2>Today's Summary</h2>
+            <p><strong>Hours Worked Today:</strong> {{ hours_today }} hrs</p>
+            <p><strong>Earnings Today:</strong> ${{ earnings_today }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Profile</h2>
+            <p><strong>Name:</strong> {{ employee.name }}</p>
+            <p><strong>Hourly Rate:</strong> ${{ employee.hourly_rate }}</p>
+        </div>
+    </div>
+        <!-- ========================= -->
+<!--   WEEKLY HOURS & EARNINGS CHARTS  -->
 <!-- ========================= -->
-<!--   CURRENT STATUS          -->
-<!-- ========================= -->
-<p><strong>Status:</strong> {{ current_status }}</p>
+<div class="summary-container">
+    <div class="chart-card">
+        <h2>Weekly Hours Worked</h2>
+        <canvas id="hoursChart"></canvas>
+    </div>
 
-{% if clock_in_time %}
-<p><strong>Clock-in Time:</strong>
-    {{ clock_in_time.strftime('%b %d, %I:%M %p') }}
-</p>
+    <div class="chart-card">
+        <h2>Weekly Earnings</h2>
+        <canvas id="earningsChart"></canvas>
+    </div>
+</div>
+    <!-- ========================= -->
+    <!--   DATE RANGE FORM CARD    -->
+    <!-- ========================= -->
+    <div class="card">
+        <h2>Check Worked Hours & Salary</h2>
 
-<p><strong>Expected Clock-Out:</strong>
-    {{ expected_clock_out.strftime('%b %d, %I:%M %p') }}
-</p>
-{% endif %}
+        <form method="POST" action="{{ url_for('main.employee_dashboard') }}">
+            <label for="start_date">Start Date:</label>
+            <input type="date" name="start_date" id="start_date" required
+                   value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}">
 
-<hr>
+            <label for="end_date">End Date:</label>
+            <input type="date" name="end_date" id="end_date" required
+                   value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}">
 
-<!-- ========================= -->
-<!--   TODAY SUMMARY           -->
-<!-- ========================= -->
-<h2>Today's Summary</h2>
-<p><strong>Hours Worked Today:</strong> {{ hours_today }} hrs</p>
-<p><strong>Earnings Today:</strong> ${{ earnings_today }}</p>
+            <button type="submit">Calculate</button>
+        </form>
 
-<hr>
+        {% if total_hours and salary %}
+        <div class="results">
+            <h3>Results:</h3>
+            <p>Total Hours Worked: {{ total_hours }}</p>
+            <p>Salary: ${{ salary }}</p>
+        </div>
+        {% endif %}
+    </div>
 
-<!-- ========================= -->
-<!--   PROFILE SECTION         -->
-<!-- ========================= -->
-<h2>Profile</h2>
-<p><strong>Name:</strong> {{ employee.name }}</p>
-<p><strong>Hourly Rate:</strong> ${{ employee.hourly_rate }}</p>
+    <!-- ========================= -->
+    <!--   BACK TO LOGIN           -->
+    <!-- ========================= -->
+    <form action="{{ url_for('main.index') }}">
+        <button type="submit" class="back-btn">Back to Login</button>
+    </form>
 
-<hr>
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 
-<!-- ========================= -->
-<!--   DATE RANGE FORM         -->
-<!-- ========================= -->
-<h2>Check Worked Hours & Salary</h2>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<form method="POST" action="{{ url_for('main.employee_dashboard') }}">
-    <label for="start_date">Start Date:</label>
-    <input type="date" name="start_date" id="start_date" required
-           value="{{ start_date.strftime('%Y-%m-%d') if start_date else '' }}">
+<script>
+    // Data passed from Flask (make sure backend sends lists for 7 days)
+    const weekLabels = {{ week_labels|tojson }}; // e.g., ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+    const hoursData = {{ week_hours|tojson }};  // e.g., [8,7.5,8,6,8,0,0]
+    const earningsData = {{ week_earnings|tojson }}; // e.g., [120,112.5,120,90,120,0,0]
 
-    <label for="end_date">End Date:</label>
-    <input type="date" name="end_date" id="end_date" required
-           value="{{ end_date.strftime('%Y-%m-%d') if end_date else '' }}">
+    // Weekly Hours Chart
+    const ctxHours = document.getElementById('hoursChart').getContext('2d');
+    new Chart(ctxHours, {
+        type: 'bar',
+        data: {
+            labels: weekLabels,
+            datasets: [{
+                label: 'Hours Worked',
+                data: hoursData,
+                backgroundColor: '#6c63ff',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 
-    <button type="submit">Calculate</button>
-</form>
-
-{% if total_hours and salary %}
-<h3>Results:</h3>
-<p>Total Hours Worked: {{ total_hours }}</p>
-<p>Salary: ${{ salary }}</p>
-{% endif %}
-
-<!-- ========================= -->
-<!--   BACK TO LOGIN           -->
-<!-- ========================= -->
-<form action="{{ url_for('main.index') }}">
-    <button type="submit">Back to Login</button>
-</form>
-
-<!-- Flash messages -->
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul>
-  {% for msg in messages %}
-    <li>{{ msg }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
-
+    // Weekly Earnings Chart
+    const ctxEarnings = document.getElementById('earningsChart').getContext('2d');
+    new Chart(ctxEarnings, {
+        type: 'bar',
+        data: {
+            labels: weekLabels,
+            datasets: [{
+                label: 'Earnings ($)',
+                data: earningsData,
+                backgroundColor: '#00bfa6',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
 </body>
 </html>

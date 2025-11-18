@@ -1,0 +1,118 @@
+/* Global */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #6c63ff, #00bfa6);
+    color: #333;
+}
+
+/* Login Card */
+.login-container {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* spacing between sections inside card */
+}
+
+/* Headings */
+h2 {
+    margin-bottom: 20px;
+    font-size: 26px;
+    color: #333;
+    text-align: center;
+}
+
+/* Form Inputs */
+form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-align: left;
+}
+
+form input[type="text"],
+form input[type="password"] {
+    width: 80%;
+    padding: 10px 12px; /* smaller height */
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    line-height: 1.4; /* center text vertically */
+}
+
+form input:focus {
+    border-color: #6c63ff;
+    outline: none;
+    box-shadow: 0 0 6px rgba(108, 99, 255, 0.3);
+}
+
+/* Buttons */
+button.btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #6c63ff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button.btn:hover {
+    background-color: #574fd6;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Flash Messages */
+.flash-messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+.flash-messages li {
+    background: #ffe6e6;
+    color: #cc0000;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-align: left;
+}
+
+/* Responsive tweaks */
+@media (max-width: 500px) {
+    .login-container {
+        padding: 30px 20px;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    form input[type="text"],
+    form input[type="password"] {
+        font-size: 14px;
+        padding: 9px 10px;
+    }
+
+    button.btn {
+        font-size: 15px;
+        padding: 10px;
+    }
+}
