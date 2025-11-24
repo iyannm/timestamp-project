@@ -1,0 +1,120 @@
+/* admin_dashboard_full.css - unified theme for admin pages */
+
+/* Colors:
+   Dark Navy:  #0C2B4E
+   Deep Blue:  #1A3D64
+   Teal Blue:  #1D546C
+   Light Gray: #F4F4F4
+*/
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+body{
+  background: linear-gradient(135deg,#0C2B4E,#1A3D64);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:40px 20px;
+  color:#F4F4F4;
+}
+
+/* container */
+.dashboard-container{
+  background:#F4F4F4;
+  color:#0C2B4E;
+  width:100%;
+  max-width:1200px;
+  border-radius:18px;
+  padding:32px;
+  box-shadow:0 20px 35px rgba(0,0,0,0.25);
+}
+
+/* headings */
+h1{ font-size:32px; text-align:center; margin-bottom:22px; }
+h2{ font-size:20px; color:#1D546C; margin-bottom:12px; }
+
+/* cards grid */
+.cards-container, .card-grid {
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  margin-bottom:20px;
+}
+
+/* Make management cards 2-up on wide screens */
+.card-grid .card, .cards-container .card {
+  flex: 1 1 calc(50% - 20px);
+  min-width:300px;
+}
+
+/* card generic */
+.card{
+  background:#fff;
+  border-left:5px solid #1D546C;
+  border-radius:12px;
+  padding:18px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* full-width cards (attendance / report) */
+.full-card { flex:1 1 100%; }
+
+/* forms */
+.card form{ display:flex; flex-direction:column; gap:10px; }
+.card label{ font-weight:600; color:#0C2B4E; font-size:14px; }
+.card input[type="text"], .card input[type="number"], .card input[type="date"], .card select, .card input[type="file"]{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #1A3D64;
+  background:#fff;
+  color:#0C2B4E;
+  font-size:14px;
+  width:100%;
+}
+
+/* buttons */
+.btn{
+  background:#1D546C;
+  color:#F4F4F4;
+  border:none;
+  padding:11px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:15px;
+  transition: all .18s ease;
+}
+.btn:hover{ background:#1A3D64; transform:translateY(-2px); box-shadow:0 10px 20px rgba(0,0,0,0.12); }
+
+/* small button (inline) */
+.btn-sm{ padding:8px 10px; font-size:14px; border-radius:8px; }
+
+/* flash messages */
+.flash-list{ list-style:none; margin-top:14px; text-align:left; padding-left:0; }
+.flash-list li{ background:#f8d7da; color:#721c24; padding:10px; border-radius:8px; margin-bottom:8px; }
+
+/* table */
+.table-wrap{ overflow:auto; margin-top:12px; }
+.table{ width:100%; border-collapse:collapse; font-size:14px; }
+.table th, .table td{ padding:10px 12px; border-bottom:1px solid #eee; text-align:left; color:#0C2B4E; }
+.table th{ background:#F4F4F4; position:sticky; top:0; }
+
+/* pagination controls */
+.pagination{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.page-btn{ padding:8px 10px; border-radius:8px; background:#eee; color:#0C2B4E; cursor:pointer; border:none; }
+.page-btn.active{ background:#1D546C; color:#fff; }
+
+/* chart card specifically */
+.chart-card{ display:flex; flex-direction:column; gap:12px; align-items:stretch; }
+.chart-card canvas{ width:100% !important; height:300px !important; }
+
+/* helper row */
+.row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.row .flex-1{ flex:1; }
+
+/* responsive */
+@media (max-width:900px){
+  .card-grid .card, .cards-container .card{ flex:1 1 100%; }
+  h1{ font-size:26px; }
+  .chart-card canvas{ height:240px !important; }
+}

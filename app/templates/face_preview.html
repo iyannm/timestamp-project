@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 
     <style>
-        /* Override/add specific styles for the face preview box */
         body {
             background: linear-gradient(135deg, #6c63ff, #00bfa6);
             color: #fff;
@@ -19,7 +18,7 @@
             padding: 30px;
             border-radius: 15px;
             text-align: center;
-            width: 420px;
+            width: 450px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
@@ -27,8 +26,16 @@
         }
 
         img {
-            width: 370px;
+            width: 180px;
             border-radius: 12px;
+            margin-bottom: 18px;
+            margin-right: 10px;
+        }
+
+        .images-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 18px;
         }
 
@@ -42,6 +49,11 @@
             margin-top: 8px;
             color: #ccc;
         }
+
+        .label {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
 
@@ -49,10 +61,21 @@
 
 <div class="login-container box">
     {% if img %}
-        <img src="{{ url_for('static', filename='tmp/' + img) }}"
-             onerror="console.error('IMAGE FAILED TO LOAD:', this.src)">
+        <div class="images-row">
+            <div>
+                <div class="label">Captured Image</div>
+                <img src="{{ url_for('static', filename='tmp/' + img) }}"
+                     onerror="console.error('IMAGE FAILED TO LOAD:', this.src)">
+            </div>
 
-
+            {% if matched_face %}
+            <div>
+                <div class="label">Best Match</div>
+                <img src="{{ url_for('static', filename='tmp/' + matched_face) }}"
+                     onerror="console.error('IMAGE FAILED TO LOAD:', this.src)">
+            </div>
+            {% endif %}
+        </div>
     {% endif %}
 
     {% if success %}

@@ -1,402 +1,193 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session, Response
-from . import db
-from .models import Employee, Attendance
-from .utils import FaceRecognizer, clean_tmp_folder
-
-from datetime import datetime, timedelta, date
+import cv2
 import face_recognition
 import pickle
-import cv2
+import base64
 import numpy as np
-import uuid, cv2, os
-
-
-main_bp = Blueprint("main", __name__)
-recognizer = FaceRecognizer()  # single instance
-
-# Login page
-@main_bp.route("/")
-def index():
-    return render_template("login.html")
-# Snapshot login with face recognition
-
-@main_bp.route("/login_face", methods=["POST"])
-def login_face():
-    print("=== /login_face called ===")
-
-    clean_tmp_folder()
-
-    employee, frame, face_loc = recognizer.recognize()
-
-    # Create tmp folder if missing
-    tmp_path = os.path.join("app","static", "tmp")
-    os.makedirs(tmp_path, exist_ok=True)
-
-    # Save frame preview
-    preview_filename = None
-
-    if frame is not None:
-        # Draw face rectangle if detected
-        if face_loc:
-            top, right, bottom, left = face_loc
-            top *= 2; right *= 2; bottom *= 2; left *= 2
-            cv2.rectangle(frame, (left, top), (right, bottom), (0,255,0), 3)
-
-        preview_filename = f"{uuid.uuid4()}.jpg"
-        file_path = os.path.join(tmp_path, preview_filename)
-        cv2.imwrite(file_path, frame)
-
-        session["last_capture"] = preview_filename
-
-    # If no employee recognized → go to preview page
-    if not employee:
-        print("Face not recognized!")
-        session.pop("employee_id", None)
-        return redirect(url_for("main.face_preview"))
-
-    # Toggle attendance state
-    if not employee.status:
-        employee.status = "clocked out"
-
-    previous = employee.status
-    employee.status = "clocked in" if employee.status == "clocked out" else "clocked out"
-
-    record = Attendance(employee_id=employee.id, status=employee.status)
-    db.session.add(record)
-    db.session.commit()
-
-    session["employee_id"] = employee.id
-
-    return redirect(url_for("main.face_preview"))
-
-
-@main_bp.route("/face_preview")
-def face_preview():
-    img = session.get("last_capture")
-    success = "employee_id" in session
-    return render_template("face_preview.html", img=img, success=success)
-
-
-# Employee dashboard
-@main_bp.route("/employee_dashboard", methods=["GET", "POST"])
-def employee_dashboard():
-    employee_id = session.get("employee_id")
-    if not employee_id:
-        flash("Please log in first")
-        return redirect(url_for("main.index"))
-
-    employee = Employee.query.get(employee_id)
-
-    # --- Latest log for status ---
-    latest_log = Attendance.query.filter_by(employee_id=employee_id)\
-        .order_by(Attendance.id.desc()).first()
-
-    if latest_log and latest_log.status == "clocked in":
-        current_status = "Clocked In"
-        clock_in_time = latest_log.timestamp
-    else:
-        current_status = "Clocked Out"
-        clock_in_time = None
-
-    expected_clock_out = clock_in_time + timedelta(hours=8) if clock_in_time else None
-
-    # --- Today's hours & earnings ---
-    today = date.today()
-    today_logs = Attendance.query.filter(
-        Attendance.employee_id == employee_id,
-        db.func.date(Attendance.timestamp) == today
-    ).order_by(Attendance.timestamp).all()
-
-    today_seconds = 0
-    open_clock_in = None
-    for log in today_logs:
-        if log.status == "clocked in":
-            open_clock_in = log.timestamp
-        elif log.status == "clocked out" and open_clock_in:
-            today_seconds += (log.timestamp - open_clock_in).total_seconds()
-            open_clock_in = None
-    if open_clock_in:
-        today_seconds += (datetime.now() - open_clock_in).total_seconds()
-
-    hours_today = round(today_seconds / 3600, 2)
-    earnings_today = round(hours_today * employee.hourly_rate, 2)
-
-    # --- Date range calculations ---
-    total_hours = 0
-    salary = 0
-    start_date = end_date = None
-
-    if request.method == "POST":
-        start_date_str = request.form.get("start_date")
-        end_date_str = request.form.get("end_date")
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-
-        records = Attendance.query.filter(
-            Attendance.employee_id == employee.id,
-            Attendance.timestamp >= start_date,
-            Attendance.timestamp <= end_date
-        ).order_by(Attendance.timestamp).all()
-
-        clock_in_dt = None
-        for r in records:
-            if r.status == "clocked in":
-                clock_in_dt = r.timestamp
-            elif r.status == "clocked out" and clock_in_dt:
-                total_hours += (r.timestamp - clock_in_dt).total_seconds() / 3600
-                clock_in_dt = None
-
-        salary = total_hours * employee.hourly_rate
-
-    # --- Last 7 days for charts ---
-    week_labels = []
-    week_hours = []
-    week_earnings = []
-    for i in range(6, -1, -1):
-        day = today - timedelta(days=i)
-        week_labels.append(day.strftime("%a"))
-        day_logs = Attendance.query.filter(
-            Attendance.employee_id == employee.id,
-            db.func.date(Attendance.timestamp) == day
-        ).order_by(Attendance.timestamp).all()
-
-        day_seconds = 0
-        open_clock_in = None
-        for log in day_logs:
-            if log.status == "clocked in":
-                open_clock_in = log.timestamp
-            elif log.status == "clocked out" and open_clock_in:
-                day_seconds += (log.timestamp - open_clock_in).total_seconds()
-                open_clock_in = None
-        if open_clock_in:
-            day_seconds += (datetime.now() - open_clock_in).total_seconds()
-
-        hours = round(day_seconds / 3600, 2)
-        week_hours.append(hours)
-        week_earnings.append(round(hours * employee.hourly_rate, 2))
-
-    # --- Render template ---
-    return render_template(
-        "employee_dashboard.html",
-        employee=employee,
-        current_status=current_status,
-        clock_in_time=clock_in_time,
-        expected_clock_out=expected_clock_out,
-        hours_today=hours_today,
-        earnings_today=earnings_today,
-        total_hours=round(total_hours, 2),
-        salary=round(salary, 2),
-        start_date=start_date,
-        end_date=end_date,
-        week_labels=week_labels,
-        week_hours=week_hours,
-        week_earnings=week_earnings
-    )
-
-# --- Upload Face Temporary---
-@main_bp.route("/upload_face", methods=["GET", "POST"])
-def upload_face():
-    if request.method == "POST":
-        employee_id = request.form.get("employee_id")
-        file = request.files.get("face_image")
-
-        if not file:
-            flash("No file uploaded")
-            return redirect(request.url)
-
-        # Read the image
-        image = face_recognition.load_image_file(file)
-        encodings = face_recognition.face_encodings(image)
-
-        if not encodings:
-            flash("No face detected in the image.")
-            return redirect(request.url)
-
-        face_encoding = encodings[0]
-        employee = Employee.query.get(employee_id)
-        if not employee:
-            flash("Employee not found.")
-            return redirect(request.url)
-
-        # Store the encoding in database
-        employee.face_encoding = pickle.dumps(face_encoding)
-        db.session.commit()
-        flash("Face uploaded successfully!")
-        return redirect(url_for("main.upload_face"))
-
-    employees = Employee.query.all()
-    return render_template("upload_face.html", employees=employees)
-
-# --- Admin Login Page ---
-@main_bp.route("/admin_login_page")
-def admin_login_page():
-    return render_template("admin_login.html")
-
-
-# --- Admin Login ---
-@main_bp.route("/admin_login", methods=["GET", "POST"])
-def admin_login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        if username == "admin" and password == "admin":
-            session["admin"] = True
-            flash("Admin logged in successfully")
-            return redirect(url_for("main.admin_dashboard"))
-        else:
-            flash("Invalid admin credentials")
-            return redirect(url_for("main.admin_login_page"))
-    else:
-        # Redirect GET requests to login page
-        return redirect(url_for("main.admin_login_page"))
-
-
-# --- Admin Logout ---
-@main_bp.route("/admin_logout")
-def admin_logout():
-    session.pop("admin", None)
-    flash("Admin logged out")
-    return redirect(url_for("main.admin_login_page"))
-
-
-# --- Admin Dashboard ---
-@main_bp.route("/admin_dashboard")
-def admin_dashboard():
-    if not session.get("admin"):
-        flash("Admin login required")
-        return redirect(url_for("main.admin_login_page"))
-    return render_template("admin_dashboard.html")
-
-
-# --- Add Employee ---
-@main_bp.route("/add_employee", methods=["POST"])
-def add_employee():
-    if not session.get("admin"):
-        flash("Admin login required")
-        return redirect(url_for("main.admin_login_page"))
-
-    name = request.form.get("name")
-    rate = float(request.form.get("hourly_rate"))
-    new_emp = Employee(name=name, hourly_rate=rate)
-    db.session.add(new_emp)
-    db.session.commit()
-    flash("Employee added successfully")
-    return redirect(url_for("main.admin_dashboard"))
-
-
-# --- Delete Employee ---
-@main_bp.route("/delete_employee", methods=["POST"])
-def delete_employee():
-    if not session.get("admin"):
-        flash("Admin login required")
-        return redirect(url_for("main.admin_login_page"))
-
-    emp_id = request.form.get("employee_id")
-    employee = Employee.query.get(emp_id)
-
-    if employee:
-        db.session.delete(employee)
-        db.session.commit()
-        flash(f"Employee {employee.name} deleted")
-    else:
-        flash("Employee not found")
-
-    return redirect(url_for("main.admin_dashboard"))
-
-
-# --- Upload Face ---
-@main_bp.route("/upload_face_admin", methods=["POST"])
-def upload_face_admin():
-    if not session.get("admin"):
-        flash("Admin login required")
-        return redirect(url_for("main.admin_login_page"))
-
-    emp_id = request.form.get("employee_id")
-    file = request.files.get("face_image")
-
-    employee = Employee.query.get(emp_id)
-    if not employee:
-        flash("Employee not found")
-        return redirect(url_for("main.admin_dashboard"))
-
-    try:
-        img = face_recognition.load_image_file(file)
-        encodings = face_recognition.face_encodings(img)
-        if len(encodings) == 0:
-            flash("No face detected in image.")
-            return redirect(url_for("main.admin_dashboard"))
-
-        # Save first encoding (can be changed to store multiple)
-        employee.face_encoding = pickle.dumps(encodings[0])
-        db.session.commit()
-        flash("Face image uploaded successfully")
-    except Exception as e:
-        flash(f"Error processing image: {e}")
-
-    return redirect(url_for("main.admin_dashboard"))
-
-
-# --- View Attendance ---
-@main_bp.route("/view_attendance")
-def view_attendance():
-    if not session.get("admin"):
-        flash("Admin login required")
-        return redirect(url_for("main.admin_login_page"))
-
-    emp_id = request.args.get("employee_id")
-    employee = Employee.query.get(emp_id)
-    if not employee:
-        flash("Employee not found")
-        return redirect(url_for("main.admin_dashboard"))
-
-    records = Attendance.query.filter_by(employee_id=emp_id).order_by(Attendance.timestamp).all()
-    return render_template("view_attendance.html", employee=employee, records=records)
-
-
-# --- Salary Report ---
-@main_bp.route("/salary_report", methods=["POST"])
-def salary_report():
-    if not session.get("admin"):
-        flash("Admin login required")
-        return redirect(url_for("main.admin_login_page"))
-
-    try:
-        start = datetime.strptime(request.form.get("start_date"), "%Y-%m-%d")
-        end = datetime.strptime(request.form.get("end_date"), "%Y-%m-%d")
-    except Exception:
-        flash("Invalid date format")
-        return redirect(url_for("main.admin_dashboard"))
-
-    employees = Employee.query.all()
-    report = []
-
-    for e in employees:
-        records = Attendance.query.filter(
-            Attendance.employee_id == e.id,
-            Attendance.timestamp >= start,
-            Attendance.timestamp <= end
-        ).order_by(Attendance.timestamp).all()
-
-        total_hours = 0
-        clock_in_time = None
-
-        for r in records:
-            if r.status == "clocked in":
-                clock_in_time = r.timestamp
-            elif r.status == "clocked out" and clock_in_time:
-                total_hours += (r.timestamp - clock_in_time).total_seconds() / 3600
-                clock_in_time = None
-
-        report.append({
-            "name": e.name,
-            "hours": round(total_hours, 2),
-            "salary": round(total_hours * e.hourly_rate, 2)
-        })
-
-    return render_template("salary_report.html", report=report)
-
-
-
-
-
+import os
+import time
+
+from .models import Employee, EmployeeFace
+
+
+class FaceRecognizer:
+    def __init__(self, camera_index=0, tolerance=0.45):
+        self.camera_index = camera_index
+        self.tolerance = tolerance
+
+        # Memory storage (multiple encodings)
+        self.known_encodings = []      # list of numpy arrays
+        self.known_employees = []      # list of Employee objects
+        self.encodings_loaded = False  # safe lazy DB loading
+
+        print(f"[FaceRecognizer] Initialized with camera {camera_index}, tolerance={tolerance}")
+
+    # ----------------------------------------------------------------------
+    # LOAD MULTIPLE FACE ENCODINGS PER EMPLOYEE
+    # ----------------------------------------------------------------------
+    def load_encodings(self):
+        if self.encodings_loaded:
+            return
+
+        print("[FaceRecognizer] Loading employee encodings into RAM...")
+
+        try:
+            employees = Employee.query.all()
+        except Exception as e:
+            print("[FaceRecognizer] ERROR: DB not ready:", e)
+            return
+
+        self.known_encodings = []
+        self.known_employees = []
+
+        for emp in employees:
+            # Load all face images for this employee
+            for f in emp.faces:   # Employee.faces relationship
+                try:
+                    raw = base64.b64decode(f.face_encoding)
+                    encoding = pickle.loads(raw)
+
+                    self.known_encodings.append(encoding)
+                    self.known_employees.append(emp)
+
+                except Exception as e:
+                    print(f"[FaceRecognizer] Failed to decode encoding for {emp.name}:", e)
+
+        self.encodings_loaded = True
+        print(f"[FaceRecognizer] Loaded {len(self.known_encodings)} total encodings")
+
+    # ----------------------------------------------------------------------
+    # CAPTURE FRAME
+    # ----------------------------------------------------------------------
+    def capture_frame(self):
+        cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
+        if not cap.isOpened():
+            return None
+        ret, frame = cap.read()
+        cap.release()
+        if not ret or frame is None:
+            return None
+        return frame
+
+    # ----------------------------------------------------------------------
+    # BLINK / LIVENESS CHECK
+    # ----------------------------------------------------------------------
+    def is_blinking(self, frame):
+        try:
+            landmarks = face_recognition.face_landmarks(frame)
+            if not landmarks:
+                return False
+
+            left = landmarks[0]["left_eye"]
+            right = landmarks[0]["right_eye"]
+
+            def ear(eye):
+                A = np.linalg.norm(np.array(eye[1]) - np.array(eye[5]))
+                B = np.linalg.norm(np.array(eye[2]) - np.array(eye[4]))
+                C = np.linalg.norm(np.array(eye[0]) - np.array(eye[3]))
+                return (A + B) / (2.0 * C)
+
+            EAR = (ear(left) + ear(right)) / 2
+            return EAR < 0.19
+
+        except Exception:
+            return False
+
+    # ----------------------------------------------------------------------
+    # MULTI-FRAME VERIFICATION
+    # ----------------------------------------------------------------------
+    def verify_identity(self, required_frames=5, min_matches=3):
+        matches = 0
+        detected_loc = None
+        final_emp = None
+        samples = 0
+
+        while samples < required_frames:
+            frame = self.capture_frame()
+            if frame is None:
+                samples += 1
+                continue
+
+            resized = cv2.resize(frame, (0, 0), fx=0.75, fy=0.75)
+            rgb = resized[:, :, ::-1]
+
+            locs = face_recognition.face_locations(rgb)
+            encs = face_recognition.face_encodings(rgb, locs)
+
+            if not encs:
+                samples += 1
+                continue
+
+            captured_encoding = encs[0]
+            detected_loc = locs[0]
+
+            best_match = None
+            best_dist = 999
+
+            # Compare against ALL saved face encodings
+            for known_enc, emp in zip(self.known_encodings, self.known_employees):
+                dist = face_recognition.face_distance([known_enc], captured_encoding)[0]
+                if dist < best_dist:
+                    best_dist = dist
+                    best_match = emp
+
+            if best_dist < self.tolerance:
+                matches += 1
+                final_emp = best_match
+
+            samples += 1
+            time.sleep(0.15)
+
+        if matches >= min_matches:
+            return final_emp, detected_loc
+
+        return None, detected_loc
+
+    # ----------------------------------------------------------------------
+    # MAIN RECOGNITION PIPELINE
+    # ----------------------------------------------------------------------
+    def recognize(self):
+        # Safe lazy load NOW (inside request context)
+        self.load_encodings()
+
+        # 1. Liveness: Blink detection
+        print("[FaceRecognizer] Checking for blink...")
+        blinked = False
+
+        for _ in range(10):
+            frame = self.capture_frame()
+            if frame is None:
+                continue
+
+            rgb = frame[:, :, ::-1]
+
+            if self.is_blinking(rgb):
+                blinked = True
+                print("[FaceRecognizer] Blink detected")
+                break
+
+            time.sleep(0.1)
+
+        if not blinked:
+            print("[FaceRecognizer] Liveness failed: No blink detected")
+            return None, None, None
+
+        # 2. Identity verification
+        print("[FaceRecognizer] Running identity matching...")
+        emp, loc = self.verify_identity()
+
+        final_frame = self.capture_frame()
+        return emp, final_frame, loc
+
+# ----------------------------------------------------------------------
+# CLEAN TMP FOLDER
+# ----------------------------------------------------------------------
+def clean_tmp_folder():
+    tmp_path = os.path.join("app", "static", "tmp")
+    if not os.path.exists(tmp_path):
+        return
+
+    for f in os.listdir(tmp_path):
+        try:
+            os.remove(os.path.join(tmp_path, f))
+        except:
+            pass

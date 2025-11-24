@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/view_attendance.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>Attendance Logs for {{ employee.name }}</h1>
+
+    <!-- Filters -->
+    <form method="GET" action="{{ url_for('main.view_attendance') }}" class="filter-form">
+        <input type="hidden" name="employee_id" value="{{ employee.id }}">
+
+        <label>Date From:</label>
+        <input type="date" name="date_from" value="{{ request.args.get('date_from','') }}">
+
+        <label>Date To:</label>
+        <input type="date" name="date_to" value="{{ request.args.get('date_to','') }}">
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- Attendance Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <!-- Pagination Buttons -->
+    <div class="pagination">
+        <button id="prev-btn">Previous</button>
+        <span id="page-info"></span>
+        <button id="next-btn">Next</button>
+    </div>
+
+    <a href="{{ url_for('main.admin_dashboard') }}" class="back-btn">Back to Dashboard</a>
+
+    <h2>Hours Worked (Chart)</h2>
+    <canvas id="hoursChart"></canvas>
+</div>
+
+<script>
+    // Convert Python list -> JS
+    const records = {{ (records or []) | tojson }};
+
+    // Pagination setup
+    let page = 1;
+    const perPage = 10;
+
+    function renderTable() {
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+
+        const start = (page - 1) * perPage;
+        const end = start + perPage;
+
+        const pageRecords = records.slice(start, end);
+
+        for (const r of pageRecords) {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.timestamp}</td>
+                    <td>${r.status}</td>
+                </tr>`;
+        }
+
+        document.getElementById("page-info").innerText =
+            `Page ${page} of ${Math.ceil(records.length / perPage)}`;
+    }
+
+    document.getElementById("next-btn").onclick = () => {
+        if (page * perPage < records.length) {
+            page++;
+            renderTable();
+        }
+    };
+
+    document.getElementById("prev-btn").onclick = () => {
+        if (page > 1) {
+            page--;
+            renderTable();
+        }
+    };
+
+    renderTable();
+
+    // Chart: Hours per day
+    const dayMap = {};
+
+    records.forEach(r => {
+        const day = r.timestamp.split(" ")[0];
+        if (!(day in dayMap)) dayMap[day] = 0;
+        if (r.status === "clocked in") dayMap[day] += 0.5;
+    });
+
+    const labels = Object.keys(dayMap);
+    const data = Object.values(dayMap);
+
+    new Chart(document.getElementById("hoursChart"), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Hours Worked",
+                data: data
+            }]
+        }
+    });
+</script>
+
+</body>
+</html>

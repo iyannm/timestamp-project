@@ -1,83 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
 </head>
 <body>
 
-<h1>Admin Dashboard</h1>
+<div class="dashboard-container">
+    <h1>Admin Dashboard</h1>
 
-<!-- Add Employee -->
-<h2>Add Employee</h2>
-<form method="POST" action="{{ url_for('main.add_employee') }}">
-    <label>Name:</label>
-    <input type="text" name="name" required>
-    <label>Hourly Rate:</label>
-    <input type="number" step="0.01" name="hourly_rate" required>
-    <button type="submit">Add Employee</button>
-</form>
+    <!-- ========================= -->
+    <!-- Employee Management Grid -->
+    <!-- ========================= -->
+    <div class="card-grid">
 
-<hr>
+        <!-- ADD EMPLOYEE -->
+        <div class="card">
+            <h2>Add Employee</h2>
+            <form method="POST" action="{{ url_for('main.add_employee') }}">
+                <label>Name:</label>
+                <input type="text" name="name" required>
 
-<!-- Delete Employee -->
-<h2>Delete Employee</h2>
-<form method="POST" action="{{ url_for('main.delete_employee') }}">
-    <label>Employee ID:</label>
-    <input type="number" name="employee_id" required>
-    <button type="submit">Delete</button>
-</form>
+                <label>Hourly Rate:</label>
+                <input type="number" step="0.01" name="hourly_rate" required>
 
-<hr>
+                <button type="submit">Add Employee</button>
+            </form>
+        </div>
 
-<!-- Upload Face -->
-<h2>Upload Face Image</h2>
-<form method="POST" enctype="multipart/form-data" action="{{ url_for('main.upload_face_admin') }}">
-    <label>Employee ID:</label>
-    <input type="number" name="employee_id" required>
-    <input type="file" name="face_image" accept="image/*" required>
-    <button type="submit">Upload</button>
-</form>
+        <!-- EDIT EMPLOYEE (redirects to edit page) -->
+        <div class="card">
+            <h2>Edit Employee</h2>
+            <form method="GET" action="" onsubmit="event.preventDefault(); window.location.href='/edit_employee/' + document.getElementById('edit_id').value;">
+                <label>Employee ID:</label>
+                <input id="edit_id" type="number" name="employee_id" required>
 
-<hr>
+                <button type="submit">Go to Edit Page</button>
+            </form>
+        </div>
 
-<!-- View Hours -->
-<h2>View Employee Attendance</h2>
-<form method="GET" action="{{ url_for('main.view_attendance') }}">
-    <label>Employee ID:</label>
-    <input type="number" name="employee_id" required>
-    <button type="submit">View</button>
-</form>
+        <!-- DELETE EMPLOYEE -->
+        <div class="card">
+            <h2>Delete Employee</h2>
+            <form method="POST" action="{{ url_for('main.delete_employee') }}">
+                <label>Employee ID:</label>
+                <input type="number" name="employee_id" required>
+                <button type="submit">Delete</button>
+            </form>
+        </div>
 
-<hr>
+        <!-- UPLOAD MULTIPLE FACES -->
+        <div class="card">
+            <h2>Upload Face Images</h2>
+            <form method="POST" enctype="multipart/form-data" action="{{ url_for('main.upload_faces_admin') }}">
+                <label>Employee ID:</label>
+                <input type="number" name="employee_id" required>
 
-<!-- Salary Report -->
-<h2>Salary Report</h2>
-<form method="POST" action="{{ url_for('main.salary_report') }}">
-    <label>Start Date:</label>
-    <input type="date" name="start_date" required>
+                <label>Select Images (multiple allowed):</label>
+                <input type="file" name="face_images" accept="image/*" multiple required>
 
-    <label>End Date:</label>
-    <input type="date" name="end_date" required>
+                <button type="submit">Upload Faces</button>
+            </form>
+        </div>
 
-    <button type="submit">Generate Report</button>
-</form>
+    </div>
 
-<hr>
+    <!-- ========================= -->
+    <!-- Attendance Logs -->
+    <!-- ========================= -->
+    <div class="card">
+        <h2>View Employee Attendance</h2>
+        <form method="GET" action="{{ url_for('main.view_attendance') }}">
+            <label>Employee ID:</label>
+            <input type="number" name="employee_id">
 
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul>
-      {% for msg in messages %}
-        <li>{{ msg }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+            <label>Date (optional):</label>
+            <input type="date" name="date">
 
-<form action="{{ url_for('main.index') }}">
-    <button type="submit">Back to Login</button>
-</form>
+            <button type="submit">View Attendance</button>
+        </form>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Salary Report -->
+    <!-- ========================= -->
+    <div class="card">
+        <h2>Salary Report</h2>
+        <form method="POST" action="{{ url_for('main.salary_report') }}">
+            <label>Start Date:</label>
+            <input type="date" name="start_date" required>
+
+            <label>End Date:</label>
+            <input type="date" name="end_date" required>
+
+            <button type="submit">Generate Report</button>
+        </form>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('main.index') }}">
+        <button type="submit" class="back-btn">Back to Login</button>
+    </form>
+
+</div>
 
 </body>
 </html>

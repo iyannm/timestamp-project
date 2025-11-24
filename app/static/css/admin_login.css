@@ -7,29 +7,29 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #6c63ff, #00bfa6);
-    color: #333;
+    background: linear-gradient(135deg, #0C2B4E, #1A3D64);
+    color: #F4F4F4;
 }
 
 /* Login Card */
 .login-container {
-    background: #fff;
+    background: #F4F4F4;
     padding: 40px 30px;
     border-radius: 15px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
     max-width: 400px;
     width: 90%;
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* spacing between sections inside card */
+    gap: 15px;
 }
 
 /* Headings */
 h2 {
     margin-bottom: 20px;
     font-size: 26px;
-    color: #333;
+    color: #0C2B4E;
     text-align: center;
 }
 
@@ -39,24 +39,27 @@ form label {
     margin-bottom: 6px;
     font-weight: 600;
     text-align: left;
+    color: #0C2B4E;
 }
 
 form input[type="text"],
 form input[type="password"] {
     width: 80%;
-    padding: 10px 12px; /* smaller height */
+    padding: 10px 12px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #1A3D64;
     margin-bottom: 15px;
     font-size: 15px;
+    line-height: 1.4;
+    background: #fff;
+    color: #0C2B4E;
     transition: all 0.3s ease;
-    line-height: 1.4; /* center text vertically */
 }
 
 form input:focus {
-    border-color: #6c63ff;
+    border-color: #1D546C;
     outline: none;
-    box-shadow: 0 0 6px rgba(108, 99, 255, 0.3);
+    box-shadow: 0 0 6px rgba(29, 84, 108, 0.4);
 }
 
 /* Buttons */
@@ -65,29 +68,23 @@ button.btn {
     padding: 12px;
     border: none;
     border-radius: 8px;
-    background-color: #6c63ff;
-    color: #fff;
+    background-color: #1D546C;
+    color: #F4F4F4;
     font-size: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 button.btn:hover {
-    background-color: #574fd6;
+    background-color: #1A3D64;
     transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 /* Flash Messages */
-.flash-messages {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 15px;
-}
-
 .flash-messages li {
-    background: #ffe6e6;
-    color: #cc0000;
+    background: #f8d7da;
+    color: #721c24;
     padding: 8px 12px;
     border-radius: 6px;
     margin-bottom: 8px;
@@ -95,7 +92,7 @@ button.btn:hover {
     text-align: left;
 }
 
-/* Responsive tweaks */
+/* Responsive */
 @media (max-width: 500px) {
     .login-container {
         padding: 30px 20px;

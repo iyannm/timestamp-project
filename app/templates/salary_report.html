@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Salary Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/salary_report.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>Salary Report</h1>
+
+    <!-- Salary Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Total Hours</th>
+                <th>Total Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in report %}
+            <tr>
+                <td>{{ r.name }}</td>
+                <td>{{ r.hours }} hrs</td>
+                <td>${{ r.salary }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Salary Chart -->
+    <h2>Salary Chart</h2>
+    <canvas id="salaryChart"></canvas>
+
+    <!-- Back Button -->
+    <a href="{{ url_for('main.admin_dashboard') }}" class="back-btn">Back to Dashboard</a>
+</div>
+
+<script>
+    const report = {{ (report or []) | tojson }};
+
+    const labels = report.map(r => r.name);
+    const salaryData = report.map(r => r.salary);
+
+    new Chart(document.getElementById("salaryChart"), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Salary ($)',
+                data: salaryData,
+                backgroundColor: '#00bfa6',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `$${context.raw}`; // show $ in tooltip
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

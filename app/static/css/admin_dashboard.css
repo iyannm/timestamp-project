@@ -1,5 +1,3 @@
-/* employee_dashboard.css */
-
 /* Global */
 * {
     box-sizing: border-box;
@@ -14,28 +12,32 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 50px 0;
+    padding: 50px 20px;
     color: #F4F4F4;
 }
 
+/* Dashboard Container */
 .dashboard-container {
     background: #F4F4F4;
-    padding: 35px 30px;
-    border-radius: 18px;
+    padding: 40px 30px;
+    border-radius: 20px;
     box-shadow: 0 20px 35px rgba(0,0,0,0.25);
-    max-width: 1000px;
-    width: 95%;
+    max-width: 1100px;
+    width: 100%;
     color: #0C2B4E;
 }
 
 /* Headings */
-h1, h2, h3 {
-    color: #0C2B4E;
+h1 {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 40px;
 }
 
-h1 {
-    font-size: 32px;
-    margin-bottom: 25px;
+h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #1D546C;
 }
 
 /* Cards */
@@ -48,29 +50,42 @@ h1 {
     border-left: 5px solid #1D546C;
 }
 
-/* Status */
-.status.clocked-in {
-    background: #d4edda;
-    color: #155724;
+/* Card grid for employee management */
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
-.status.clocked-out {
-    background: #f8d7da;
-    color: #721c24;
+.card-grid .card {
+    flex: 1 1 calc(50% - 20px); /* two cards per row */
 }
 
 /* Form Inputs */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 form label {
     font-weight: 600;
     color: #0C2B4E;
 }
 
-form input[type="date"] {
+form input[type="text"],
+form input[type="number"],
+form input[type="date"],
+form input[type="file"],
+form select {
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid #1A3D64;
     background: #fff;
     color: #0C2B4E;
+    font-size: 14px;
+    width: 100%;
 }
 
 /* Buttons */
@@ -83,6 +98,7 @@ form button {
     cursor: pointer;
     font-size: 16px;
     transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 form button:hover {
@@ -91,7 +107,22 @@ form button:hover {
     box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
 
-/* Back Button */
+/* HR */
+hr {
+    margin: 35px 0;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+/* Flash messages */
+ul {
+    margin-top: 15px;
+    padding-left: 20px;
+    color: #721c24;
+    font-weight: 500;
+}
+
+/* Back button */
 .back-btn {
     margin-top: 20px;
     background: #0C2B4E !important;
@@ -101,22 +132,22 @@ form button:hover {
     background: #1A3D64 !important;
 }
 
-/* Flash messages */
-ul {
-    margin-top: 20px;
-    padding-left: 20px;
-    color: #721c24;
-    font-weight: 500;
-}
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 25px 20px;
+    }
 
+    h1 {
+        font-size: 28px;
+    }
 
-/* Make charts 50% smaller */
-.chart-container {
-    width: 50% !important;
-    margin: 0 auto;
-}
+    h2 {
+        font-size: 20px;
+    }
 
-.chart-container canvas {
-    width: 100% !important;
-    height: auto !important;
+    /* Stack cards on small screens */
+    .card-grid .card {
+        flex: 1 1 100%;
+    }
 }

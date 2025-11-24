@@ -1,0 +1,170 @@
+/* =============================== */
+/* Global Theme */
+/* =============================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #0C2B4E, #1A3D64);
+    min-height: 100vh;
+    padding: 40px 0;
+    display: flex;
+    justify-content: center;
+    color: #0C2B4E;
+}
+
+.container {
+    background: #F4F4F4;
+    width: 95%;
+    max-width: 1000px;
+    padding: 40px 35px;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+h1, h2 {
+    color: #0C2B4E;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* =============================== */
+/* Filters */
+/* =============================== */
+.filter-form {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-form label {
+    font-weight: 600;
+}
+
+.filter-form input[type="date"] {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #1A3D64;
+    background: #fff;
+    color: #0C2B4E;
+}
+
+.filter-form button {
+    background: #1D546C;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.3s ease;
+}
+
+.filter-form button:hover {
+    background: #164259;
+    transform: scale(1.05);
+}
+
+/* =============================== */
+/* Table Styling */
+/* =============================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+thead {
+    background: #1D546C;
+    color: #ffffff;
+}
+
+thead th {
+    padding: 14px 10px;
+    text-align: left;
+    font-size: 15px;
+}
+
+tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+tbody tr:hover {
+    background: #eef4f7;
+}
+
+/* =============================== */
+/* Pagination */
+/* =============================== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.pagination button {
+    background: #1A3D64;
+    color: #fff;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.pagination button:hover {
+    background: #163350;
+    transform: scale(1.05);
+}
+
+#page-info {
+    font-weight: bold;
+    color: #0C2B4E;
+}
+
+/* =============================== */
+/* Chart */
+/* =============================== */
+canvas {
+    margin-top: 20px;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+/* =============================== */
+/* Back Button */
+/* =============================== */
+.back-btn {
+    display: inline-block;
+    margin-top: 25px;
+    background: #0C2B4E;
+    color: white;
+    text-decoration: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    transition: 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #1A3D64;
+    transform: scale(1.05);
+}
+

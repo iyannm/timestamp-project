@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Employee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+</head>
+<body>
+<div class="dashboard-container">
+    <h1>Edit Employee</h1>
+
+    <div class="card">
+        <form method="POST" action="{{ url_for('main.edit_employee', employee_id=employee.id) }}">
+            <label>Name:</label>
+            <input type="text" name="name" value="{{ employee.name }}" required>
+
+            <label>Hourly Rate:</label>
+            <input type="number" step="0.01" name="hourly_rate" value="{{ employee.hourly_rate }}" required>
+
+            <button type="submit">Update Employee</button>
+        </form>
+    </div>
+
+    <form action="{{ url_for('main.admin_dashboard') }}">
+        <button class="back-btn">Back to Dashboard</button>
+    </form>
+</div>
+</body>
+</html>

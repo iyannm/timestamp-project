@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <title>Timecard System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="login-container">
-        <!-- Logo -->
         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
 
         <h1>Welcome to Timecard System</h1>
         <p class="tagline">Clock in/out quickly with facial recognition or login as admin to manage employees.</p>
 
-        <!-- Flash Messages -->
+        <!-- Blink Instruction (appears on button press) -->
+        <p id="blink-instruction" style="
+            display:none;
+            margin-top:10px;
+            color:#0059ff;
+            font-weight:600;
+            font-size:1.1rem;
+        ">
+            👁️ Please look at the camera and blink to verify liveness...
+        </p>
+
         {% with messages = get_flashed_messages() %}
           {% if messages %}
             {% for msg in messages %}
@@ -24,9 +32,8 @@
           {% endif %}
         {% endwith %}
 
-        <!-- Buttons -->
         <div class="button-group">
-            <!-- Employee Face Login -->
+
             <form method="POST" action="{{ url_for('main.login_face') }}" id="face-login-form">
                 <button type="submit" class="face-login" id="face-login-btn">
                     <i class="fas fa-user-circle"></i>
@@ -35,7 +42,6 @@
                 </button>
             </form>
 
-            <!-- Admin Login -->
             <form method="GET" action="{{ url_for('main.admin_login') }}">
                 <button type="submit" class="admin-login">
                     <i class="fas fa-user-lock"></i> Admin Login
@@ -45,22 +51,22 @@
 
         <hr>
 
-        <!-- Footer / System Info -->
         <div class="footer">
             Version 1.0 | &copy; 2025 Your Company
         </div>
     </div>
 
     <script>
-        // Show spinner when face login form is submitted
         const faceForm = document.getElementById('face-login-form');
         const faceBtn = document.getElementById('face-login-btn');
         const spinner = faceBtn.querySelector('.spinner-icon');
         const btnText = faceBtn.querySelector('.btn-text');
+        const blinkInstruction = document.getElementById('blink-instruction');
 
         faceForm.addEventListener('submit', () => {
             spinner.style.display = 'inline-block';
             btnText.style.display = 'none';
+            blinkInstruction.style.display = 'block';
             faceBtn.disabled = true;
         });
     </script>
