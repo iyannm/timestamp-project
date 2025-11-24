@@ -29,7 +29,6 @@
             width: 180px;
             border-radius: 12px;
             margin-bottom: 18px;
-            margin-right: 10px;
         }
 
         .images-row {
@@ -63,18 +62,10 @@
     {% if img %}
         <div class="images-row">
             <div>
-                <div class="label">Captured Image</div>
+                <div class="label">First Captured Frame</div>
                 <img src="{{ url_for('static', filename='tmp/' + img) }}"
                      onerror="console.error('IMAGE FAILED TO LOAD:', this.src)">
             </div>
-
-            {% if matched_face %}
-            <div>
-                <div class="label">Best Match</div>
-                <img src="{{ url_for('static', filename='tmp/' + matched_face) }}"
-                     onerror="console.error('IMAGE FAILED TO LOAD:', this.src)">
-            </div>
-            {% endif %}
         </div>
     {% endif %}
 

@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="login-container">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="logo">
 
         <h1>Welcome to Timecard System</h1>
         <p class="tagline">Clock in/out quickly with facial recognition or login as admin to manage employees.</p>
@@ -33,7 +33,6 @@
         {% endwith %}
 
         <div class="button-group">
-
             <form method="POST" action="{{ url_for('main.login_face') }}" id="face-login-form">
                 <button type="submit" class="face-login" id="face-login-btn">
                     <i class="fas fa-user-circle"></i>

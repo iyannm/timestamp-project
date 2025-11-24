@@ -25,7 +25,7 @@ def login_face():
     print("\n=== /login_face called ===")
 
     clean_tmp_folder()
-
+    recognizer.start()  # turn camera ON
     # ---------------------------------------
     # RUN FACE RECOGNITION + LIVENESS
     # ---------------------------------------
@@ -42,19 +42,6 @@ def login_face():
     # ---------------------------------------
     if frame is not None:
         try:
-            if face_loc:
-                top, right, bottom, left = face_loc
-
-                # Your recognizer downsized frames to 0.75 scale.
-                # So we upscale coords back to full-res:
-                scale = 1 / 0.75
-                top = int(top * scale)
-                right = int(right * scale)
-                bottom = int(bottom * scale)
-                left = int(left * scale)
-
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
-
             preview_filename = f"{uuid.uuid4()}.jpg"
             save_path = os.path.join(tmp_path, preview_filename)
             cv2.imwrite(save_path, frame)
@@ -93,15 +80,24 @@ def login_face():
     session["employee_id"] = employee.id
 
     print(f"⏱ Attendance toggled: {previous_status} → {new_status}")
-
+    recognizer.release()  # turn camera OFF after recognition
     return redirect(url_for("main.face_preview"))
 
 
 @main_bp.route("/face_preview")
 def face_preview():
-    img = session.get("last_capture")
-    success = "employee_id" in session
-    return render_template("face_preview.html", img=img, success=success)
+    # Get the first captured frame from session
+    preview_filename = session.get("last_capture", None)
+
+    # Check if login was successful
+    employee_id = session.get("employee_id", None)
+    success = employee_id is not None
+
+    return render_template(
+        "face_preview.html",
+        img=preview_filename,
+        success=success
+    )
 
 
 # Employee dashboard
