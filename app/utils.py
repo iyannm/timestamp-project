@@ -8,29 +8,28 @@ import time
 
 from .models import Employee, EmployeeFace
 
+
 class FaceRecognizer:
-    def __init__(self, camera_index=0, tolerance=0.45, resize_factor=0.75, detection_model="hog"):
+    def __init__(self, camera_index=0, tolerance=0.45):
         self.camera_index = camera_index
         self.tolerance = tolerance
-        self.resize_factor = resize_factor
-        self.detection_model = detection_model
 
-        # Memory storage
-        self.known_encodings = []
-        self.known_employees = []
-        self.known_encodings_np = None
-        self.encodings_loaded = False
+        # Memory storage (multiple encodings)
+        self.known_encodings = []      # list of numpy arrays
+        self.known_employees = []      # list of Employee objects
+        self.encodings_loaded = False  # safe lazy DB loading
 
         print(f"[FaceRecognizer] Initialized with camera {camera_index}, tolerance={tolerance}")
 
-    # --------------------------------
-    # Load all encodings into RAM
-    # --------------------------------
+    # ----------------------------------------------------------------------
+    # LOAD MULTIPLE FACE ENCODINGS PER EMPLOYEE
+    # ----------------------------------------------------------------------
     def load_encodings(self):
         if self.encodings_loaded:
             return
 
         print("[FaceRecognizer] Loading employee encodings into RAM...")
+
         try:
             employees = Employee.query.all()
         except Exception as e:
@@ -41,37 +40,37 @@ class FaceRecognizer:
         self.known_employees = []
 
         for emp in employees:
-            for f in emp.faces:
+            # Load all face images for this employee
+            for f in emp.faces:   # Employee.faces relationship
                 try:
                     raw = base64.b64decode(f.face_encoding)
                     encoding = pickle.loads(raw)
+
                     self.known_encodings.append(encoding)
                     self.known_employees.append(emp)
+
                 except Exception as e:
                     print(f"[FaceRecognizer] Failed to decode encoding for {emp.name}:", e)
-
-        if self.known_encodings:
-            self.known_encodings_np = np.array(self.known_encodings)
 
         self.encodings_loaded = True
         print(f"[FaceRecognizer] Loaded {len(self.known_encodings)} total encodings")
 
-    # --------------------------------
-    # Capture a single frame
-    # --------------------------------
+    # ----------------------------------------------------------------------
+    # CAPTURE FRAME
+    # ----------------------------------------------------------------------
     def capture_frame(self):
         cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
         if not cap.isOpened():
             return None
         ret, frame = cap.read()
         cap.release()
-        if not ret:
+        if not ret or frame is None:
             return None
         return frame
 
-    # --------------------------------
-    # Simple blink/liveness check
-    # --------------------------------
+    # ----------------------------------------------------------------------
+    # BLINK / LIVENESS CHECK
+    # ----------------------------------------------------------------------
     def is_blinking(self, frame):
         try:
             landmarks = face_recognition.face_landmarks(frame)
@@ -93,10 +92,10 @@ class FaceRecognizer:
         except Exception:
             return False
 
-    # --------------------------------
-    # Multi-frame verification
-    # --------------------------------
-    def verify_identity(self, required_frames=3, min_matches=2):
+    # ----------------------------------------------------------------------
+    # MULTI-FRAME VERIFICATION
+    # ----------------------------------------------------------------------
+    def verify_identity(self, required_frames=5, min_matches=3):
         matches = 0
         detected_loc = None
         final_emp = None
@@ -108,10 +107,10 @@ class FaceRecognizer:
                 samples += 1
                 continue
 
-            resized = cv2.resize(frame, (0, 0), fx=self.resize_factor, fy=self.resize_factor)
+            resized = cv2.resize(frame, (0, 0), fx=0.75, fy=0.75)
             rgb = resized[:, :, ::-1]
 
-            locs = face_recognition.face_locations(rgb, model=self.detection_model)
+            locs = face_recognition.face_locations(rgb)
             encs = face_recognition.face_encodings(rgb, locs)
 
             if not encs:
@@ -121,61 +120,72 @@ class FaceRecognizer:
             captured_encoding = encs[0]
             detected_loc = locs[0]
 
-            # Vectorized distance check
-            distances = face_recognition.face_distance(self.known_encodings_np, captured_encoding)
-            best_idx = np.argmin(distances)
-            best_dist = distances[best_idx]
+            best_match = None
+            best_dist = 999
+
+            # Compare against ALL saved face encodings
+            for known_enc, emp in zip(self.known_encodings, self.known_employees):
+                dist = face_recognition.face_distance([known_enc], captured_encoding)[0]
+                if dist < best_dist:
+                    best_dist = dist
+                    best_match = emp
 
             if best_dist < self.tolerance:
                 matches += 1
-                final_emp = self.known_employees[best_idx]
+                final_emp = best_match
 
             samples += 1
-            time.sleep(0.05)
+            time.sleep(0.15)
 
         if matches >= min_matches:
             return final_emp, detected_loc
 
         return None, detected_loc
 
-    # --------------------------------
-    # Main recognition pipeline
-    # --------------------------------
+    # ----------------------------------------------------------------------
+    # MAIN RECOGNITION PIPELINE
+    # ----------------------------------------------------------------------
     def recognize(self):
+        # Safe lazy load NOW (inside request context)
         self.load_encodings()
 
-        # Blink/liveness check (optional, minimal frames)
-        print("[FaceRecognizer] Checking for blink/liveness...")
+        # 1. Liveness: Blink detection
+        print("[FaceRecognizer] Checking for blink...")
         blinked = False
-        for _ in range(2):
+
+        for _ in range(10):
             frame = self.capture_frame()
             if frame is None:
                 continue
+
             rgb = frame[:, :, ::-1]
+
             if self.is_blinking(rgb):
                 blinked = True
                 print("[FaceRecognizer] Blink detected")
                 break
-            time.sleep(0.05)
+
+            time.sleep(0.1)
 
         if not blinked:
             print("[FaceRecognizer] Liveness failed: No blink detected")
             return None, None, None
 
-        # Identity verification
+        # 2. Identity verification
         print("[FaceRecognizer] Running identity matching...")
         emp, loc = self.verify_identity()
 
         final_frame = self.capture_frame()
         return emp, final_frame, loc
 
-# --------------------------------
-# Clean temporary folder
-# --------------------------------
+# ----------------------------------------------------------------------
+# CLEAN TMP FOLDER
+# ----------------------------------------------------------------------
 def clean_tmp_folder():
     tmp_path = os.path.join("app", "static", "tmp")
     if not os.path.exists(tmp_path):
         return
+
     for f in os.listdir(tmp_path):
         try:
             os.remove(os.path.join(tmp_path, f))
